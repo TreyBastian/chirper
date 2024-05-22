@@ -11,11 +11,19 @@ class CreateTest extends TestCase
 {
     use RefreshDatabase;
 
+    private $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
+
     public function test_it_can_render(): void
     {
 
-        $user = User::factory()->create();
-        $response = $this->actingAs($user)->get('/chirps');
+        $response = $this->get('/chirps');
 
         $response
             ->assertOk()
@@ -24,9 +32,6 @@ class CreateTest extends TestCase
 
     public function test_chirp_can_be_created(): void
     {
-        $user = User::factory()->create();
-
-        $this->actingAs($user);
 
         $component = Volt::test('chirps.create')
             ->set('message', 'Hello I\'m a test chirp')
@@ -36,10 +41,15 @@ class CreateTest extends TestCase
             ->assertHasNoErrors()
             ->assertNoRedirect();
 
-        $user->refresh();
+        $this->user->refresh();
 
-        $this->assertSame(1, $user->loadCount('chirps')->chirps_count);
+        $this->assertSame(1, $this->user->loadCount('chirps')->chirps_count);
         $this->assertSame('Hello I\'m a test chirp',
-            $user->chirps()->get()->first()->message);
+            $this->user->chirps()->get()->first()->message);
+    }
+
+    public function test_invaid_chirp_cannot_be_submitted(): void
+    {
+
     }
 }
