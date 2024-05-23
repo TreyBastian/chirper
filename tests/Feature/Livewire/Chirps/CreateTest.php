@@ -1,67 +1,49 @@
 <?php
 
-namespace Tests\Feature\Livewire\Chirps;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
-use Tests\TestCase;
 
-class CreateTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    private $user;
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
-    }
+test('it can render', function () {
+    $response = $this->get('/chirps');
 
-    public function test_it_can_render(): void
-    {
+    $response
+        ->assertOk()
+        ->assertSeeVolt('chirps.create');
+});
 
-        $response = $this->get('/chirps');
+test('chirp can be created', function () {
+    $component = Volt::test('chirps.create')
+        ->set('message', 'Hello I\'m a test chirp')
+        ->call('store');
 
-        $response
-            ->assertOk()
-            ->assertSeeVolt('chirps.create');
-    }
+    $component
+        ->assertHasNoErrors()
+        ->assertNoRedirect()
+        ->assertDispatched('chirp-created');
 
-    public function test_chirp_can_be_created(): void
-    {
+    $this->user->refresh();
 
-        $component = Volt::test('chirps.create')
-            ->set('message', 'Hello I\'m a test chirp')
-            ->call('store');
+    expect($this->user->loadCount('chirps')->chirps_count)->toBe(1);
+    expect($this->user->chirps()->get()->first()->message)->toBe('Hello I\'m a test chirp');
+});
 
-        $component
-            ->assertHasNoErrors()
-            ->assertNoRedirect()
-            ->assertDispatched('chirp-created');
+test('invaid chirp cannot be submitted', function () {
+    $component = Volt::test('chirps.create')->set('message', '')
+        ->call('store');
+    $component->assertHasErrors()->assertNotDispatched('chirp-created');
 
-        $this->user->refresh();
+    $component = Volt::test('chirps.create')->set('message', str_repeat('abcdefgh', 32))
+        ->call('store');
+    $component->assertHasErrors()->assertNotDispatched('chirp-created');
 
-        $this->assertSame(1, $this->user->loadCount('chirps')->chirps_count);
-        $this->assertSame('Hello I\'m a test chirp',
-            $this->user->chirps()->get()->first()->message);
-    }
-
-    public function test_invaid_chirp_cannot_be_submitted(): void
-    {
-        $component = Volt::test('chirps.create')->set('message', '')
-            ->call('store');
-        $component->assertHasErrors()->assertNotDispatched('chirp-created');
-
-        $component = Volt::test('chirps.create')->set('message', str_repeat('abcdefgh', 32))
-            ->call('store');
-        $component->assertHasErrors()->assertNotDispatched('chirp-created');
-
-        $component = Volt::test('chirps.create')->set('message', str_repeat('abcde', 51))
-            ->call('store');
-        $component->assertHasNoErrors();
-
-    }
-}
+    $component = Volt::test('chirps.create')->set('message', str_repeat('abcde', 51))
+        ->call('store');
+    $component->assertHasNoErrors();
+});

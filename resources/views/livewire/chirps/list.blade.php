@@ -5,13 +5,13 @@ use App\Models\Chirp;
 use function Livewire\Volt\on;
 use function Livewire\Volt\state;
 
-$getChirps = fn () => ($this->chirps = $this->chirps = Chirp::with('user')->latest()->get());
+$getChirps = fn () => ($this->chirps = Chirp::with('user')->latest()->get());
 
 state(['chirps' => $getChirps]);
 on(['chirp-created' => $getChirps]);
 
 ?>
-<div class="mt-6 bg-white shadow-sm roudned-lg divide-y">
+<div class="mt-6 bg-white shadow-sm rounded-lg divide-y">
     @foreach ($chirps as $chirp)
         <div class="p-6 flex space-x-2" wire:key="{{ $chirp->id }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 -scale-x-100" fill="none"
