@@ -15,6 +15,8 @@ new class extends Component
         auth()->user()->chirps()->create($validated);
 
         $this->message = '';
+
+        $this->dispatch('chirp-created');
     }
 
     public function validateOnBlur(): void
@@ -30,6 +32,6 @@ new class extends Component
 
         <x-input-error :messages="$errors->get('message')" class="mt-2" />
 
-        <x-primary-button class="mt-4">{{ __('Chirp') }}</x-primary-button>
+        <x-primary-button class="w-full mt-4">{{ __('Chirp') }}</x-primary-button>
     </form>
 </div>

@@ -39,7 +39,8 @@ class CreateTest extends TestCase
 
         $component
             ->assertHasNoErrors()
-            ->assertNoRedirect();
+            ->assertNoRedirect()
+            ->assertDispatched('chirp-created');
 
         $this->user->refresh();
 
@@ -50,6 +51,17 @@ class CreateTest extends TestCase
 
     public function test_invaid_chirp_cannot_be_submitted(): void
     {
+        $component = Volt::test('chirps.create')->set('message', '')
+            ->call('store');
+        $component->assertHasErrors()->assertNotDispatched('chirp-created');
+
+        $component = Volt::test('chirps.create')->set('message', str_repeat('abcdefgh', 32))
+            ->call('store');
+        $component->assertHasErrors()->assertNotDispatched('chirp-created');
+
+        $component = Volt::test('chirps.create')->set('message', str_repeat('abcde', 51))
+            ->call('store');
+        $component->assertHasNoErrors();
 
     }
 }
