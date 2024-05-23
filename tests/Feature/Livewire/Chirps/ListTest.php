@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\Livewire\Chirps;
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
@@ -21,10 +23,7 @@ test('chirps increses when event is dispatched', function () {
     $component = Volt::test('chirps.list');
     expect($component->chirps)->toHaveCount(0);
 
-    Volt::test('chirps.create')
-        ->set('message', 'hello world')
-        ->call('store')
-        ->assertDispatched('chirp-created');
+    Volt::test('chirps.create')->set('message', 'hello world')->call('store')->assertDispatched('chirp-created');
 
     $component->dispatch('chirp-created');
     expect($component->chirps)->toHaveCount(1);
