@@ -1,25 +1,16 @@
 <?php
 
 use App\Models\Chirp;
-use Illuminate\Database\Eloquent\Collection;
-use Livewire\Attributes\On;
-use Livewire\Volt\Component;
 
-new class extends Component
-{
-    public Collection $chirps;
+use function Livewire\Volt\on;
+use function Livewire\Volt\state;
 
-    public function mount(): void
-    {
-        $this->getChirps();
-    }
+$getChirps = fn () => ($this->chirps = $this->chirps = Chirp::with('user')->latest()->get());
 
-    #[On('chirp-created')]
-    public function getChirps(): void
-    {
-        $this->chirps = Chirp::with('user')->latest()->get();
-    }
-}; ?>
+state(['chirps' => $getChirps]);
+on(['chirp-created' => $getChirps]);
+
+?>
 <div class="mt-6 bg-white shadow-sm roudned-lg divide-y">
     @foreach ($chirps as $chirp)
         <div class="p-6 flex space-x-2" wire:key="{{ $chirp->id }}">

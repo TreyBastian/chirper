@@ -1,29 +1,24 @@
 <?php
 
-use Livewire\Attributes\Validate;
-use Livewire\Volt\Component;
+use function Livewire\Volt\rules;
+use function Livewire\Volt\state;
 
-new class extends Component
-{
-    #[Validate('required|string|max:255')]
-    public string $message = '';
+state(['message' => '']);
+rules(['message' => 'required|string|max:255']);
 
-    public function store(): void
-    {
-        $validated = $this->validate();
+$store = function () {
+    $validated = $this->validate();
 
-        auth()->user()->chirps()->create($validated);
+    auth()->user()->chirps()->create($validated);
 
-        $this->message = '';
+    $this->message = '';
 
-        $this->dispatch('chirp-created');
-    }
+    $this->dispatch('chirp-created');
+};
 
-    public function validateOnBlur(): void
-    {
-        $this->validate();
-    }
-}; ?>
+$validateOnBlur = fn () => $this->validate();
+
+?>
 
 <div>
     <form wire:submit="store">
